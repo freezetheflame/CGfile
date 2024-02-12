@@ -1,5 +1,7 @@
 # GAMES101作业 xmake 版本
 
+
+## 声明！忘了fork了，所以作业的实际框架来自于LINGQI YAN， xmake版本的发布是@star-hengxing，特此说明！
 理论上跨平台，只测试过 Windows，Linux/MAC 未测试
 
 如果第三方库没有预编译版本，Xmake 会手动拉取依赖源码并行编译
