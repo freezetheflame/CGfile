@@ -33,17 +33,48 @@ void naive_bezier(const std::vector<cv::Point2f> &points, cv::Mat &window)
 cv::Point2f recursive_bezier(const std::vector<cv::Point2f> &control_points, float t) 
 {
     // TODO: Implement de Casteljau's algorithm
-    return cv::Point2f();
-
+    if(control_points.size() == 1)
+        return control_points[0];
+    std::vector<cv::Point2f> new_control_points;
+    for(int i = 0; i < control_points.size() - 1; i++)
+    {
+        new_control_points.push_back((1 - t) * control_points[i] + t * control_points[i + 1]);
+    }
+    return recursive_bezier(new_control_points, t);
 }
 
 void bezier(const std::vector<cv::Point2f> &control_points, cv::Mat &window) 
 {
     // TODO: Iterate through all t = 0 to t = 1 with small steps, and call de Casteljau's 
     // recursive Bezier algorithm.
-
+    for (double t = 0.0; t <= 1.0; t += 0.001) 
+    {
+        auto point = recursive_bezier(control_points, t);
+        window.at<cv::Vec3b>(point.y, point.x)[1] = 255;
+    }
+}
+float get_distance(cv::Point2f p1, cv::Point2f p2) 
+{
+    return std::sqrt(std::pow(p1.x - p2.x, 2) + std::pow(p1.y - p2.y, 2));
 }
 
+void bezier_with_antialiasing(const std::vector<cv::Point2f> &control_points, cv::Mat &window) 
+{
+    for(float i=0;i<=1;i+=0.001f){
+        auto point = recursive_bezier(control_points, i);
+        float minx = std::floor(point.x);
+        float miny = std::floor(point.y);
+        for(int k=0;k<=1;k++)
+        {
+            for(int j=0;j<=1;j++){
+                float distance = get_distance(cv::Point2f(minx + j, miny + k), point);
+                std::cout << distance << std::endl;
+                float color = std::max(255.0f*distance,255.0f);
+                window.at<cv::Vec3b>(miny + j, minx + k)[2] = color;
+            }
+        }
+    }
+}
 int main() 
 {
     cv::Mat window = cv::Mat(700, 700, CV_8UC3, cv::Scalar(0));
@@ -62,8 +93,8 @@ int main()
 
         if (control_points.size() == 4) 
         {
-            naive_bezier(control_points, window);
-            //   bezier(control_points, window);
+            //naive_bezier(control_points, window);
+            bezier_with_antialiasing(control_points, window);
 
             cv::imshow("Bezier Curve", window);
             cv::imwrite("my_bezier_curve.png", window);
